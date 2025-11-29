@@ -1,79 +1,26 @@
-// src/components/App/App.tsx
-'use client';
-import { useState } from "react";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+// app/notes/page.tsx
+import {
+  HydrationBoundary,
+  QueryClient,
+  dehydrate,
+} from "@tanstack/react-query";
 import { fetchNotes } from "@/lib/api";
-import { useDebounce } from "use-debounce";
+import NotesClient from "./Notes.client";
 
-import NoteList from "@/components/NoteList/NoteList";
-import Pagination from "@/components/Pagination/Pagination";
-import SearchBox from "@/components/SearchBox/SearchBox"; 
-import Modal from "@/components/Modal/Modal";
-import NoteForm from "@/components/NoteForm/NoteForm";
+export default async function NotesPage() {
+  const queryClient = new QueryClient();
 
-import css from "./App.module.css";
-
-const PER_PAGE = 12;
-
-export default function App() {
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const [debouncedSearch] = useDebounce(search, 300);
-
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["notes", { page, search: debouncedSearch }],
-    queryFn: () =>
-      fetchNotes({
-        search: debouncedSearch || undefined,
-        page,
-        perPage: PER_PAGE,
-        sortBy: "created",
-      }),
-    placeholderData: keepPreviousData,
+  // SSR prefetch списку нотаток
+  await queryClient.prefetchQuery({
+    queryKey: ["notes"],
+    queryFn: () => fetchNotes({}),
   });
 
-  const totalPages = data?.totalPages ?? 1;
-  const notes = data?.notes ?? [];
-
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
-
-  // ✅ Додаємо функцію, яка скидає сторінку при зміні пошуку
-  const handleSearchChange = (newSearch: string) => {
-    setSearch(newSearch);
-    setPage(1); // ✅ Скидаємо на першу сторінку
-  };
+  const dehydratedState = dehydrate(queryClient);
 
   return (
-    <div className={css.app}>
-      <header className={css.toolbar}>
-        <SearchBox value={search} onChange={handleSearchChange} />
-
-        {totalPages > 1 && (
-          <Pagination
-            page={page}
-            totalPages={totalPages}
-            onPageChange={setPage}
-          />
-        )}
-
-        <button className={css.button} onClick={openModal}>
-          Create note +
-        </button>
-      </header>
-
-      {isLoading && <p>Loading...</p>}
-      {isError && <p>Error</p>}
-
-      {!isLoading && !isError && <NoteList notes={notes} />}
-
-      {isModalOpen && (
-        <Modal onClose={closeModal}>
-          <NoteForm onSuccess={closeModal} onCancel={closeModal} />
-        </Modal>
-      )}
-    </div>
+    <HydrationBoundary state={dehydratedState}>
+      <NotesClient />
+    </HydrationBoundary>
   );
 }
