@@ -3,7 +3,7 @@
 import css from './Footer.module.css';
 import Link from 'next/link';
 
-const footer = () => {
+const Footer = () => {
   return (
     <footer className={css.footer}>
   <div className={css.content}>
@@ -21,4 +21,5 @@ const footer = () => {
   );
 };
 
-export default footer;
+
+export default Footer;

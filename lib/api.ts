@@ -1,38 +1,8 @@
-// // lib/api.ts
-
-// import axios from "axios";
-
-// export type Note = {
-//   id: string;
-//   title: string;
-//   content: string;
-//   categoryId: string;
-//   userId: string;
-//   createdAt: string;
-//   updatedAt: string;
-// };
-
-// export type NoteListResponse = {
-//   notes: Note[];
-//   total: number;
-// };
-
-// axios.defaults.baseURL = "https://next-v1-notes-api.goit.study";
-
-// export const getNotes = async () => {
-//   const res = await axios.get<NoteListResponse>("/notes");
-//   return res.data;
-// };
-
-
-
 import axios, { type AxiosResponse } from "axios";
 import type { Note } from "../types/note";
 
 const BASE_URL = "https://notehub-public.goit.study/api";
 const token = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN as string;
-
-
 
 function getAuthHeaders() {
   return {
@@ -42,7 +12,7 @@ function getAuthHeaders() {
 }
 
 export interface FetchNotesParams {
-    id?: string;
+  id?: string;
   search?: string;
   tag?: string;
   page?: number;
@@ -51,7 +21,6 @@ export interface FetchNotesParams {
 }
 
 export interface NotesResponse {
-    id: string;
   notes: Note[];
   totalPages: number;
   page?: number;
@@ -82,13 +51,7 @@ export interface CreateNotePayload {
 }
 
 /** Створити нотатку */
-export async function createNote(
-  
-  payload: CreateNotePayload
-): Promise<Note> {
-
-   console.log("🔑 Token:", token ? "Present" : "Missing");
-  console.log("📦 Payload:", payload);
+export async function createNote(payload: CreateNotePayload): Promise<Note> {
   const res: AxiosResponse<Note> = await axios.post(
     `${BASE_URL}/notes`,
     payload,
@@ -123,8 +86,6 @@ export async function fetchNoteById(id: string): Promise<Note> {
       headers: getAuthHeaders(),
     }
   );
-
-  console.log("fetchNoteById response:", res.data);
 
   const data = res.data;
 
