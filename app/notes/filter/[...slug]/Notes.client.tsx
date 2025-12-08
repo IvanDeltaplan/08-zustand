@@ -1,5 +1,5 @@
-// src/components/App/App.tsx
-'use client';
+"use client";
+
 import { useState } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { fetchNotes } from "@/lib/api";
@@ -7,7 +7,7 @@ import { useDebounce } from "use-debounce";
 
 import NoteList from "@/components/NoteList/NoteList";
 import Pagination from "@/components/Pagination/Pagination";
-import SearchBox from "@/components/SearchBox/SearchBox"; 
+import SearchBox from "@/components/SearchBox/SearchBox";
 import Modal from "@/components/Modal/Modal";
 import NoteForm from "@/components/NoteForm/NoteForm";
 
@@ -15,7 +15,11 @@ import css from "./App.module.css";
 
 const PER_PAGE = 12;
 
-export default function App() {
+interface NotesClientProps {
+  tag?: string; 
+}
+
+export default function NotesClient({ tag }: NotesClientProps) {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,13 +27,14 @@ export default function App() {
   const [debouncedSearch] = useDebounce(search, 300);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["notes", { page, search: debouncedSearch }],
+    queryKey: ["notes", { page, search: debouncedSearch, tag }],
     queryFn: () =>
       fetchNotes({
         search: debouncedSearch || undefined,
         page,
         perPage: PER_PAGE,
         sortBy: "created",
+        tag: tag === "all" ? undefined : tag,
       }),
     placeholderData: keepPreviousData,
   });
@@ -37,41 +42,27 @@ export default function App() {
   const totalPages = data?.totalPages ?? 1;
   const notes = data?.notes ?? [];
 
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
-
-  // ✅ Додаємо функцію, яка скидає сторінку при зміні пошуку
-  const handleSearchChange = (newSearch: string) => {
-    setSearch(newSearch);
-    setPage(1); // ✅ Скидаємо на першу сторінку
-  };
-
   return (
     <div className={css.app}>
       <header className={css.toolbar}>
-        <SearchBox value={search} onChange={handleSearchChange} />
+        <SearchBox value={search} onChange={setSearch} />
 
         {totalPages > 1 && (
-          <Pagination
-            page={page}
-            totalPages={totalPages}
-            onPageChange={setPage}
-          />
+          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
         )}
 
-        <button className={css.button} onClick={openModal}>
+        <button className={css.button} onClick={() => setIsModalOpen(true)}>
           Create note +
         </button>
       </header>
 
       {isLoading && <p>Loading...</p>}
       {isError && <p>Error</p>}
-
       {!isLoading && !isError && <NoteList notes={notes} />}
 
       {isModalOpen && (
-        <Modal onClose={closeModal}>
-          <NoteForm onSuccess={closeModal} onCancel={closeModal} />
+        <Modal onClose={() => setIsModalOpen(false)}>
+          <NoteForm onSuccess={() => setIsModalOpen(false)} onCancel={() => setIsModalOpen(false)} />
         </Modal>
       )}
     </div>

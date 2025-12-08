@@ -6,3 +6,14 @@ export interface Note {
   createdAt: string;
   updatedAt: string;
 }
+
+export const NOTE_TAGS = [
+  "Todo",
+  "Work",
+  "Personal",
+  "Meeting",
+  "Shopping",
+] as const;
+
+export type NoteTag = (typeof NOTE_TAGS)[number];
+
