@@ -1,13 +1,13 @@
-// app/@modal/(..)notes/[id]/page.tsx
+// app/@modal/(.)notes/[id]/page.tsx
 import { fetchNoteById } from "@/lib/api";
-import NotePreview from "@/components/NotePreview/NotePreview";
+import NotePreview from "./NotePreview.client";
 import type { Note } from "@/types/note";
 
-interface NoteModalPageProps {
+export default async function NoteModalPage({
+  params,
+}: {
   params: Promise<{ id: string }>;
-}
-
-export default async function NoteModalPage({ params }: NoteModalPageProps) {
+}) {
   const { id } = await params;
   const note: Note = await fetchNoteById(id);
 
