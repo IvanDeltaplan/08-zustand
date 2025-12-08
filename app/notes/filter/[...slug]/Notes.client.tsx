@@ -16,7 +16,7 @@ import css from "./App.module.css";
 const PER_PAGE = 12;
 
 interface NotesClientProps {
-  tag?: string; 
+  tag?: string;
 }
 
 export default function NotesClient({ tag }: NotesClientProps) {
@@ -42,13 +42,24 @@ export default function NotesClient({ tag }: NotesClientProps) {
   const totalPages = data?.totalPages ?? 1;
   const notes = data?.notes ?? [];
 
+  // ✅ главное изменение — отдельный обработчик поиска
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setPage(1);           // ⬅️ сбрасываем страницу при каждом изменении поиска
+  };
+
   return (
     <div className={css.app}>
       <header className={css.toolbar}>
-        <SearchBox value={search} onChange={setSearch} />
+        {/* было onChange={setSearch} */}
+        <SearchBox value={search} onChange={handleSearchChange} />
 
         {totalPages > 1 && (
-          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
         )}
 
         <button className={css.button} onClick={() => setIsModalOpen(true)}>
@@ -62,7 +73,10 @@ export default function NotesClient({ tag }: NotesClientProps) {
 
       {isModalOpen && (
         <Modal onClose={() => setIsModalOpen(false)}>
-          <NoteForm onSuccess={() => setIsModalOpen(false)} onCancel={() => setIsModalOpen(false)} />
+          <NoteForm
+            onSuccess={() => setIsModalOpen(false)}
+            onCancel={() => setIsModalOpen(false)}
+          />
         </Modal>
       )}
     </div>
