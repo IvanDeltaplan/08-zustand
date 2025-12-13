@@ -36,7 +36,7 @@ export async function generateMetadata(
     openGraph: {
       title: `Note: ${note.title}`,
       description: ogDescription,
-      url: `https://your-site.com/notes/${id}`, // поменяешь на реальный домен
+      url: `08-zustand-vercel.vercel.app/notes/${id}`, 
       siteName: "NoteHub",
       images: [
         {

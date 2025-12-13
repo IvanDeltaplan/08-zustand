@@ -36,7 +36,7 @@ export async function generateMetadata(
         tagFromUrl === "all"
           ? "Browse all your notes in NoteHub."
           : `Browse notes filtered by tag "${tagFromUrl}" in NoteHub.`,
-      url: `https://your-site.com/notes/filter/${tagFromUrl}`,
+      url: `08-zustand-vercel.vercel.app/filter/${tagFromUrl}`,
       siteName: "NoteHub",
       images: [
         {
