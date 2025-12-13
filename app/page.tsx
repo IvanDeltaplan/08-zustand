@@ -1,7 +1,12 @@
 import css from "./Home.module.css";
+//import Image from "next/image";
 
 const Home = () => {
 return <main>
+  
+      
+       {/* <Image src="https://picsum.photos/seed/picsum/300/300" alt="test" width={300} height={300} />  */}
+    
   <div className={css.container}>
     <h1 className={css.title}>Welcome to NoteHub</h1>
     <p className={css.description}>
