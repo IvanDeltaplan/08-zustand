@@ -7,6 +7,10 @@ export interface Note {
   updatedAt: string;
 }
 
+export interface NoteStorePayload {
+  title: string;
+}
+
 export const NOTE_TAGS = [
   "Todo",
   "Work",

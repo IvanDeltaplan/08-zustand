@@ -2,14 +2,13 @@
 
 import { useState } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { fetchNotes } from "@/lib/api";
 import { useDebounce } from "use-debounce";
+import Link from "next/link";
 
+import { fetchNotes } from "@/lib/api";
 import NoteList from "@/components/NoteList/NoteList";
 import Pagination from "@/components/Pagination/Pagination";
 import SearchBox from "@/components/SearchBox/SearchBox";
-import Modal from "@/components/Modal/Modal";
-import NoteForm from "@/components/NoteForm/NoteForm";
 
 import css from "./App.module.css";
 
@@ -22,7 +21,6 @@ interface NotesClientProps {
 export default function NotesClient({ tag }: NotesClientProps) {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [debouncedSearch] = useDebounce(search, 300);
 
@@ -42,16 +40,14 @@ export default function NotesClient({ tag }: NotesClientProps) {
   const totalPages = data?.totalPages ?? 1;
   const notes = data?.notes ?? [];
 
-  // ✅ главное изменение — отдельный обработчик поиска
   const handleSearchChange = (value: string) => {
     setSearch(value);
-    setPage(1);           // ⬅️ сбрасываем страницу при каждом изменении поиска
+    setPage(1); // сброс страницы при изменении поиска
   };
 
   return (
     <div className={css.app}>
       <header className={css.toolbar}>
-        {/* было onChange={setSearch} */}
         <SearchBox value={search} onChange={handleSearchChange} />
 
         {totalPages > 1 && (
@@ -62,23 +58,15 @@ export default function NotesClient({ tag }: NotesClientProps) {
           />
         )}
 
-        <button className={css.button} onClick={() => setIsModalOpen(true)}>
+        {/* ⬇️ теперь это ссылка на страницу создания */}
+        <Link href="/notes/action/create" className={css.button}>
           Create note +
-        </button>
+        </Link>
       </header>
 
       {isLoading && <p>Loading...</p>}
       {isError && <p>Error</p>}
       {!isLoading && !isError && <NoteList notes={notes} />}
-
-      {isModalOpen && (
-        <Modal onClose={() => setIsModalOpen(false)}>
-          <NoteForm
-            onSuccess={() => setIsModalOpen(false)}
-            onCancel={() => setIsModalOpen(false)}
-          />
-        </Modal>
-      )}
     </div>
   );
 }
