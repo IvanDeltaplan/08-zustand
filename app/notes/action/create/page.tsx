@@ -1,28 +1,33 @@
-"use client";
-
-import { useRouter } from "next/navigation";
-import NoteForm from "@/components/NoteForm/NoteForm";
+import type { Metadata } from "next";
+import CreateNoteClient from "./CreateNoteClient";
 import css from "./CreateNote.module.css";
 
-export default function CreateNote() {
-  const router = useRouter();
+export const metadata: Metadata = {
+  title: "Create note | NoteHub",
+  description: "Create a new note in NoteHub.",
+  openGraph: {
+    title: "Create note | NoteHub",
+    description: "Create a new note in NoteHub.",
+    url: "https://your-site.com/notes/action/create",
+    siteName: "NoteHub",
+    images: [
+      {
+        url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
+        width: 1200,
+        height: 630,
+        alt: "NoteHub",
+      },
+    ],
+    type: "website",
+  },
+};
 
-  const handleSuccess = () => {
-    // после успешного создания – назад к списку
-    router.back(); 
-    // или явно: router.push("/notes/filter/all");
-  };
-
-  const handleCancel = () => {
-    router.back();
-  };
-
+export default function CreateNotePage() {
   return (
     <main className={css.main}>
       <div className={css.container}>
         <h1 className={css.title}>Create note</h1>
-        {/* NoteForm component */}
-        <NoteForm onSuccess={handleSuccess} onCancel={handleCancel} />
+        <CreateNoteClient />
       </div>
     </main>
   );

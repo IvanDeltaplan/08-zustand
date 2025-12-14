@@ -1,56 +1,51 @@
-// components/NoteForm/NoteForm.tsx
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createNote } from "@/lib/api";
-import { useNoteStore, initialDraft } from "@/lib/store/noteStore";
+import { useNoteStore } from "@/lib/store/noteStore";
 import css from "./NoteForm.module.css";
 
 const NOTE_TAGS = ["Todo", "Work", "Personal", "Meeting", "Shopping"] as const;
 type NoteTag = (typeof NOTE_TAGS)[number];
 
-type NoteFormProps = {
-  onSuccess?: () => void; // вызываем после успешного создания
-  onCancel?: () => void;  // вызываем при Cancel
-};
+export default function NoteForm() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
 
-export default function NoteForm({ onSuccess, onCancel }: NoteFormProps) {
   const { draft, setDraft, clearDraft } = useNoteStore();
 
-  const [title, setTitle] = useState(draft.title ?? initialDraft.title);
-  const [content, setContent] = useState(
-    draft.content ?? initialDraft.content
-  );
-  const [tag, setTag] = useState<NoteTag>(
-    (draft.tag as NoteTag) ?? (initialDraft.tag as NoteTag)
-  );
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const mutation = useMutation({
+    mutationFn: createNote,
+    onSuccess: async () => {
+      clearDraft();
+      await queryClient.invalidateQueries({ queryKey: ["notes"] });
+      router.back();
+    },
+  });
 
-  // сохраняем черновик при любом изменении
-  useEffect(() => {
-    setDraft({ title, content, tag });
-  }, [title, content, tag, setDraft]);
+  const handleChange: React.ChangeEventHandler<
+    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+  > = (e) => {
+    const { name, value } = e.target;
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    // name: title | content | tag
+    setDraft({ ...draft, [name]: value });
+  };
+
+  const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();
 
-    try {
-      setIsSubmitting(true);
-
-      await createNote({ title, content, tag });
-
-      clearDraft();          // черновик очистили
-      onSuccess?.();         // даём странице знать, что всё ок
-    } catch (error) {
-      console.error("Failed to create note", error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    mutation.mutate({
+      title: draft.title,
+      content: draft.content,
+      tag: draft.tag as NoteTag,
+    });
   };
 
   const handleCancelClick = () => {
-    // черновик НЕ трогаем
-    onCancel?.();
+    // draft НЕ очищаем
+    router.back();
   };
 
   return (
@@ -61,8 +56,8 @@ export default function NoteForm({ onSuccess, onCancel }: NoteFormProps) {
           id="title"
           name="title"
           className={css.input}
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          value={draft.title}
+          onChange={handleChange}
           required
         />
       </div>
@@ -74,8 +69,8 @@ export default function NoteForm({ onSuccess, onCancel }: NoteFormProps) {
           name="content"
           className={css.textarea}
           rows={5}
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
+          value={draft.content}
+          onChange={handleChange}
           required
         />
       </div>
@@ -86,8 +81,8 @@ export default function NoteForm({ onSuccess, onCancel }: NoteFormProps) {
           id="tag"
           name="tag"
           className={css.select}
-          value={tag}
-          onChange={(e) => setTag(e.target.value as NoteTag)}
+          value={draft.tag}
+          onChange={handleChange}
         >
           {NOTE_TAGS.map((option) => (
             <option key={option} value={option}>
@@ -102,17 +97,23 @@ export default function NoteForm({ onSuccess, onCancel }: NoteFormProps) {
           type="button"
           className={css.cancelButton}
           onClick={handleCancelClick}
+          disabled={mutation.isPending}
         >
           Cancel
         </button>
+
         <button
           type="submit"
           className={css.submitButton}
-          disabled={isSubmitting}
+          disabled={mutation.isPending}
         >
-          {isSubmitting ? "Creating..." : "Create note"}
+          {mutation.isPending ? "Creating..." : "Create note"}
         </button>
       </div>
+
+      {mutation.isError && (
+        <p className={css.error}>Failed to create note. Try again.</p>
+      )}
     </form>
   );
 }
