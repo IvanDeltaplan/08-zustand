@@ -57,14 +57,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={roboto.variable}>
-
+        <div id="modal-root"></div> {/* ✅ ПЕРЕМІСТІТЬ НА ПОЧАТОК */}
+        
         <TanStackProvider>
           <Header />
           <main>{children}</main>
           <Footer />
-          {modal}          {/* ⬅️ модальные маршруты */}
+          {modal}
         </TanStackProvider>
-        <div id="modal-root"></div>
       </body>
     </html>
   );
